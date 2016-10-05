@@ -6,16 +6,14 @@ public class IntakeEnumHandler {
 	
 	IntakeStates state;
 	Victor intakeMotor;
-	int ratio;
 	
 	public enum IntakeStates {
 		INTAKE , EXAUST , STATIONARY
 	}
 	
-	public IntakeEnumHandler(IntakeStates state , Victor intakeMotor, int ratio){
+	public IntakeEnumHandler(IntakeStates state , Victor intakeMotor){
 		this.state = state;
 		this.intakeMotor = intakeMotor;
-		this.ratio = ratio;
 	}
 	
 	public IntakeStates returnMode(){
@@ -30,11 +28,11 @@ public class IntakeEnumHandler {
 		switch(state) {
 		
 		case INTAKE:
-			intakeMotor.set(1/ratio);
+			intakeMotor.set(1);
 			break;
 			
 		case EXAUST:
-			intakeMotor.set(-1/ratio);
+			intakeMotor.set(-1);
 			break;
 			
 		case STATIONARY:

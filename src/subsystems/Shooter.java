@@ -5,7 +5,6 @@ import org.usfirst.frc.team2590.robot.RobotMap;
 import control.BangBangController;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDSourceType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
@@ -14,6 +13,20 @@ import edu.wpi.first.wpilibj.Victor;
  *
  */
 public class Shooter extends Thread implements RobotMap {
+	
+	private static Shooter st = null;
+	
+	public static Shooter getInstance(){	
+		if(st == null){
+			//thread safe
+			synchronized(Shooter.class){
+				if(st == null){
+					st = new Shooter();
+				}
+			}
+		}
+		return st;
+	}
 	
 	private boolean auto , tempForceFire;
 	private BangBangController bang;
@@ -38,11 +51,13 @@ public class Shooter extends Thread implements RobotMap {
 			
 			//if its ready to shoot then shoot
 			if(auto) {
-				if(tempForceFire)
+				//allows interface between two threads
+				synchronized(this){
+				/*if(tempForceFire)
 					j.feedToShooter();
 				else
-					j.stopHT();
-				
+					j.stopHT();*/
+				}
 			} 
 			
 			//if its at 0 , stop shooting
@@ -92,7 +107,8 @@ public class Shooter extends Thread implements RobotMap {
 	 * Manually set the speed of the jelly
 	 * @param speed
 	 */
-	public void setFeederSpeed(int speed) {
+	public synchronized void setFeederSpeed(int speed) {
+		
 		setAuto(false);
 		
 		switch (speed) {

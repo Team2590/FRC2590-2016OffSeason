@@ -12,6 +12,18 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Hood extends Thread implements RobotMap{
 	
+	private static Hood hd = null;
+	
+	public static Hood getInstance(){
+		if(hd == null){
+			synchronized(Hood.class){
+				if(hd == null){
+					hd = new Hood();
+				}
+			}
+		}
+		return hd;
+	}
 	private Victor hoodMotor;
 	private double kP, kI, kD ;
 	private PIDController hoodCon;

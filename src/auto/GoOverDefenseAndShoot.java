@@ -7,6 +7,8 @@ import autoActions.FixIntake;
 import autoActions.Turn;
 import control.Vision;
 import edu.wpi.first.wpilibj.Timer;
+import subsystems.Hood;
+import subsystems.Shooter;
 
 public class GoOverDefenseAndShoot extends AutoModeTemplate{
 
@@ -14,6 +16,8 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 	static Turn turnAfterOver , turnWhenCloser , Noscope , turnToZ;
 	static DriveStraight overDefense , toTower ;
 	static FixIntake fixer;
+		   Shooter st;
+		   Hood hd;
 
 	
 	public GoOverDefenseAndShoot() {
@@ -32,6 +36,8 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 		turnWhenCloser = new Turn();
 		Noscope = new Turn();
 		turnToZ = new Turn();
+		st = Shooter.getInstance();
+		hd = Hood.getInstance();
 	}
 	
 
@@ -39,15 +45,15 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 	public void run() {
 		
 		//put the intake down
-		Robot.shooter.setAuto(false);
+		st.setAuto(false);
 		Robot.drivetrain.resetAllSensors();
 		fixer.downWithTheIntake();
 		Timer.delay(.7);
 		
 		//go over the defense
 		overDefense.run();
-		Robot.shooter.setRPM(shotRPM);
-		Robot.hood.setHood(hoodA);
+		st.setRPM(shotRPM);
+		hd.setHood(hoodA);
 		waitTillDone(overDefense::done);
 		
 		//run the courtyard part of the auto
@@ -69,7 +75,7 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 			//look at the tower
 			turnAfterOver.startTurn(Vision.getTargetOffset());
 			waitTillDone(Robot.drivetrain::done);
-			currentRotation1 = (int)Robot.drivetrain.gyro.getAngle();
+			currentRotation1 = (int) Robot.drivetrain.gyro.getAngle();
 			
 			//drive to tower
 			toTower.run();
@@ -78,9 +84,9 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 			//turn to tower again
 			turnWhenCloser.startTurn(Vision.getTargetOffset());
 			waitTillDone(Robot.drivetrain::done);
-			currentRotation2 = (int)Robot.drivetrain.gyro.getAngle();
+			currentRotation2 = (int) Robot.drivetrain.gyro.getAngle();
 			
-			Robot.shooter.setFeederSpeed(1);
+			st.setFeederSpeed(1);
 			Timer.delay(1);
 			
 			turnToZ.startTurn(currentRotation1+currentRotation2);

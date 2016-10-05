@@ -1,21 +1,25 @@
 package autoActions;
 
-import org.usfirst.frc.team2590.robot.Robot;
-
 import edu.wpi.first.wpilibj.Timer;
+import subsystems.Arm;
 
 public class FixIntake{
 
 	private boolean done = false;
+	private Arm inta;
+	 
+	public FixIntake(){
+		inta = Arm.getInstance();
+	}
 	
 	/**
 	 * Just puts the intake down
 	 */
 	public void downWithTheIntake() {
-		Robot.arm.setMotorSpeed(-0.7);
+		inta.setMotorSpeed(-0.7);
 		Timer.delay(.4);
-		Robot.arm.setMotorSpeed(0);
-		Robot.arm.setEnabled(true);
+		inta.setMotorSpeed(0);
+		inta.setEnabled(true);
 		done = true;
 		
 	}

@@ -8,39 +8,55 @@ import edu.wpi.first.wpilibj.Victor;
 
 public class Jelly extends Thread implements RobotMap{
 	
+	private static Jelly j = null;
+	
+	public static Jelly getIntance(){
+		if(j == null){
+			synchronized(Jelly.class){
+				if(j == null){
+					j = new Jelly();
+				}
+			}
+		}
+		
+		return j;
+	}
+	
 	private IntakeEnumHandler handler;
 	private Victor shooterThingy;
 	
 	public void run() {
 		while(true) {
+			synchronized(this){
 			handler.update();
+			}
 		}
 	}
 	
 	public Jelly() {
 		shooterThingy = new Victor(PWM_jelly);
-		handler = new IntakeEnumHandler(IntakeStates.STATIONARY , shooterThingy, 2);
+		handler = new IntakeEnumHandler(IntakeStates.STATIONARY , shooterThingy);
 		this.start();
 	}
 	
 	/**
 	 * Pow Pow shooty bang bang
 	 */
-	public void feedToShooter() {
+	public synchronized void feedToShooter() {
 		handler.switchIntakeMode(IntakeStates.INTAKE);
 	}
 	
 	/**
 	 * I dont want this ball anymore 
 	 */
-	public void deAquireBall() {
+	public synchronized void deAquireBall() {
 		handler.switchIntakeMode(IntakeStates.EXAUST);
 	}
 	
 	/**
 	 * Stop! Hammer Time!
 	 */
-	public void stopHT() {
+	public synchronized void stopHT() {
 		handler.switchIntakeMode(IntakeStates.STATIONARY);
 	}
 	

@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class DriveTrain extends Thread implements RobotMap , Checkable{
 	
+	
 	public Encoder leftE , rightE;
 	private RobotDrive driveTrain;
 	public Victor leftM , rightM;
@@ -45,7 +46,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 		}
 	}
 	
-	public DriveTrain( Joystick x , Joystick y , Encoder LeftE , Encoder RightE ) {
+	public DriveTrain( Joystick x , Joystick y) {
 		
 		//turning PID values
 		tP = 0.1;
@@ -70,10 +71,14 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 		driveTrain = new RobotDrive(leftM, rightM);
 		
 		//encoders
-		leftE = LeftE;
-		rightE = RightE;
+		leftE = new Encoder(2,3);
+        rightE = new Encoder(1,0);
 		gyro = new AnalogGyro(0);
 		
+		
+        leftE.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
+        rightE.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
+        
 		//PID Controllers T = turn
 		turnP = new PID(tP,tI,tD,false);
 		

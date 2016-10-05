@@ -14,6 +14,20 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Arm extends Thread implements RobotMap{
 	
+	private static Arm arm = null;
+	
+	public static Arm getInstance(){
+		if(arm == null){
+			//thread safe
+			synchronized(Arm.class){
+				if(arm == null){
+					arm = new Arm();
+				}
+			}
+		}
+		return arm;
+	}
+	
 	private double kP , kI, kD , zeroPosition;
 	private PIDController armController; 
 	private AnalogPotentiometer armPot;

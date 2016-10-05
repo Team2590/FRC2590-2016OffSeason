@@ -1,6 +1,5 @@
 package subsystems;
 
-import org.usfirst.frc.team2590.robot.Robot;
 import org.usfirst.frc.team2590.robot.RobotMap;
 
 import control.IntakeEnumHandler;
@@ -14,6 +13,19 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Intake extends Thread implements RobotMap{
 
+	private static Intake in = null;
+	
+	public static Intake getInstance(){
+		if(in == null){
+			synchronized(Intake.class){
+				if(in == null){
+					in = new Intake();
+				}
+			}
+		}
+		return in;
+	}
+	
 	private Victor intakeMotor;
 	private IntakeEnumHandler handler;
 	
@@ -49,7 +61,7 @@ public class Intake extends Thread implements RobotMap{
 	 */
 	public Intake(){
 		intakeMotor = new Victor(PWM_intakeRollers);
-		handler = new IntakeEnumHandler(IntakeStates.STATIONARY, intakeMotor,1);
+		handler = new IntakeEnumHandler(IntakeStates.STATIONARY, intakeMotor);
 		this.start();
 	}
 }

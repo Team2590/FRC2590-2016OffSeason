@@ -45,7 +45,6 @@ public class Robot extends IterativeRobot implements RobotMap{
     
     //sensors
     private Joystick left , right , operator;
-    private Encoder leftEnco , rightEnco;
 
     //subsystems and that stuff
     private static ShootingParameters outerWorks , batter;
@@ -62,10 +61,7 @@ public class Robot extends IterativeRobot implements RobotMap{
      */
     public void robotInit() {
     	
-        leftEnco = new Encoder(2,3);
-        rightEnco = new Encoder(1,0);
-        leftEnco.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
-        rightEnco.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
+        
         
         operator = new Joystick(2);
         right = new Joystick(1);
@@ -78,13 +74,15 @@ public class Robot extends IterativeRobot implements RobotMap{
         startTime = 0;
         now = 0;
         
-        drivetrain = new DriveTrain(left, right ,leftEnco,rightEnco);
-        shooter = new Shooter();
-        intake = new Intake();
-        hood = new Hood();
-        arm = new Arm();
+        //implements a singleton design pattern to assure that only one
+        //class uses a class and its motors at one time
+        drivetrain = new DriveTrain(left, right);
+        shooter = Shooter.getInstance();
+        intake = Intake.getInstance();
+        hood = Hood.getInstance();
+        arm = Arm.getInstance();
         
-        autoType = (int) SmartDashboard.getNumber("Autonomous Mode");
+      /*  autoType = (int) SmartDashboard.getNumber("Autonomous Mode");
         autoPos = (int) SmartDashboard.getNumber("Autonomous Position");
        
         //lowBar options
@@ -118,14 +116,14 @@ public class Robot extends IterativeRobot implements RobotMap{
         //do nothing
         }else{
         	auto = new DoJackS();
-        }
+        }*/
     }
     
 	/**
 	 * Before Auto Runs
 	 */
     public void autonomousInit() {
-    	auto.run();
+    	//auto.run();
     }
 
     /**
@@ -138,7 +136,7 @@ public class Robot extends IterativeRobot implements RobotMap{
      * Before Teleop runs
      */
     public void teleopInit(){
-    	auto.cancel();
+    	//auto.cancel();
     	drivetrain.setAuto(false);
     	shooter.setAuto(true);
     }
@@ -191,22 +189,21 @@ public class Robot extends IterativeRobot implements RobotMap{
         //shooter
         if(right.getRawButton(1)) {
         	//trigger is outerworks shot
-        	outerWorks.setAuto(true);
-        	outerWorks.start();
-        	shooting = true;
+        	Robot.hood.setHood(15);
+    		Robot.shooter.setRPM(5400);
+    		Robot.shooter.setAuto(true);
         	
         } else if(left.getRawButton(5)) {
         	//batter shot
-        	shooting = true;
-    		batter.setAuto(true);
-        	batter.start();
+        	Robot.hood.setHood(4);
+    		Robot.shooter.setRPM(5400);
+    		Robot.shooter.setAuto(true);
 
         } else {
         	//stop shooting
         	if(!firing){
         	shooting = false;
-        	outerWorks.cancel();
-        	batter.cancel();
+    		Robot.shooter.setRPM(0);
         	}
         	
         }
@@ -217,7 +214,7 @@ public class Robot extends IterativeRobot implements RobotMap{
     	    firing = true;
     	    
     	    //start shooting and dont shoot until the driver tells us to
-        	//shooter.setRPM(5000);
+        	shooter.setRPM(5000);
         	batter.setAuto(shooting);
         	outerWorks.setAuto(shooting);
         	
@@ -231,7 +228,7 @@ public class Robot extends IterativeRobot implements RobotMap{
         	firing = (Math.abs(now - startTime) <= 10);
         	
         	//if nothings running and its been 5 seconds we stop shooting
-        	shooter.setRPM( (shooting && firing) ? 5000 : 0 );
+        	shooter.setRPM( (shooting || firing) ? 5000 : 0 );
         	
         }
         
@@ -247,11 +244,11 @@ public class Robot extends IterativeRobot implements RobotMap{
         
         //preStart the batter shot
         if(operator.getRawButton(1)) {
-        	batter.setAuto(shooting);
-        	batter.start();
+        	outerWorks.setAuto(shooting);
+        	outerWorks.start();
         } else {
         	if(!shooting)
-        		batter.cancel();
+        		outerWorks.cancel();
         }
         
         //force the arm up or down
