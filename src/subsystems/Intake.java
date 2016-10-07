@@ -7,28 +7,20 @@ import control.IntakeEnumHandler.IntakeStates;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * Sucks in the ball and spits it out
+ * <b>SUBSYTEM</b> Sucks in the ball and spits it out
  * @author Connor_Hofenbitzer
- *
  */
 public class Intake extends Thread implements RobotMap{
 
-	private static Intake in = null;
+	private static Intake in = new Intake();
 	
 	public static Intake getInstance(){
-		if(in == null){
-			synchronized(Intake.class){
-				if(in == null){
-					in = new Intake();
-				}
-			}
-		}
 		return in;
 	}
 	
 	private Victor intakeMotor;
 	private IntakeEnumHandler handler;
-	
+
 	public void run(){
 		while(true){
 			handler.update();		

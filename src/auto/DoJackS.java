@@ -1,7 +1,15 @@
 package auto;
 
-import autoActions.FixIntake;
+import org.usfirst.frc.team2590.robot.Robot;
 
+import autoActions.FixIntake;
+import subsystems.DriveTrain.DriveStates;
+
+/**
+ * <b>NULL</b> Sit there and put down the intake
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class DoJackS extends AutoModeTemplate{
 
 	private FixIntake intakeDown;
@@ -19,7 +27,7 @@ public class DoJackS extends AutoModeTemplate{
 	@Override
 	public void cancel() {
 		// TODO Auto-generated method stub
-		
+		Robot.drivetrain.setState(DriveStates.TELEOP);
 	}
 	
 

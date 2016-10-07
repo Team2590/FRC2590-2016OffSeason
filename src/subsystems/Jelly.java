@@ -6,24 +6,20 @@ import control.IntakeEnumHandler;
 import control.IntakeEnumHandler.IntakeStates;
 import edu.wpi.first.wpilibj.Victor;
 
+/**
+ * <b>SUBSYSTEM</b> pushes the ball into the shooter
+ * @author Connor_Hofenbitzer
+ */
 public class Jelly extends Thread implements RobotMap{
 	
-	private static Jelly j = null;
+	private static Jelly j = new Jelly();
 	
 	public static Jelly getIntance(){
-		if(j == null){
-			synchronized(Jelly.class){
-				if(j == null){
-					j = new Jelly();
-				}
-			}
-		}
-		
 		return j;
 	}
 	
-	private IntakeEnumHandler handler;
 	private Victor shooterThingy;
+	private IntakeEnumHandler handler;
 	
 	public void run() {
 		while(true) {

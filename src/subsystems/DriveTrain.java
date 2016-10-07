@@ -5,6 +5,7 @@ import org.usfirst.frc.team2590.robot.RobotMap;
 import auto.Checkable;
 import control.PID;
 import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -12,57 +13,85 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * Drive Train
+ * <b>SUBSYSTEM</b> Drive Train
  * @author Connor_Hofenbitzer
- *
  */
 public class DriveTrain extends Thread implements RobotMap , Checkable{
 	
+	//state controller
+	public enum DriveStates { TELEOP , TURNING , TRAJECTORY , LOCKED };
+	private DriveStates currentState;
 	
-	public Encoder leftE , rightE;
-	private RobotDrive driveTrain;
-	public Victor leftM , rightM;
+	//sensors
+	public Encoder leftE;
+	public Encoder rightE;
 	public AnalogGyro gyro;
-	private Joystick x , y;
+
+	//drive
+	private RobotDrive driveTrain;
+	
+	//motors
+	public Victor leftM;
+	public Victor rightM;
+	
+	//joysticks
+	private Joystick x;
+	private Joystick y;
+	
+	//PIDs
 	private PID turnP;
 	
-	private boolean auto , done , first;
-	private final double TOLERANCE;
-	private double tP , tI , tD;
+	//booleans
+	private boolean done = false;
+	private boolean first = true;
+	
+	//constants
+	private final double KP = 0.1;
+	private final double KI = 0.006;
+	private final double KD = 0.006;	
+	private final double TOLERANCE = 2;
+	
 	private int lastTime = 0;
 
 	
-	public void run( ) {
+	public void run() {
+		
 		while( true ) {
-			//we may only drive if we are not in auto mode
-			if( !auto ){
+			switch(currentState) {
+			
+			case TELEOP :
 				rightM.setInverted(false);
 				leftM.setInverted(false);
-				inputD( );
-			}else if (auto){
+				inputDrive();
+				break;
+				
+			case TURNING : 
 				rightM.setInverted(true);
+				break;
+				
+			case TRAJECTORY :
+				rightM.setInverted(true);
+				break;
+				
+			case LOCKED :
+				stopMotors();
+				break;
+				
+			default :
+				DriverStation.reportError("Unsupported drive state! ", false);
+				
 			}
-						
+			
 		}
+		
 	}
 	
 	public DriveTrain( Joystick x , Joystick y) {
 		
-		//turning PID values
-		tP = 0.1;
-		tI = 0.006;
-		tD = 0.006;
-		
 		//joysticks
 		this.x = x;
 		this.y = y;
-		
-		//booleans
-		auto = true;
-		done = false;
-		first = true;
-		TOLERANCE = 2;
-		
+				
 		//sensors and motors
 		leftM = new Victor(PWM_driveLeft);
 		rightM = new Victor(PWM_driveRight);
@@ -80,7 +109,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
         rightE.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
         
 		//PID Controllers T = turn
-		turnP = new PID(tP,tI,tD,false);
+		turnP = new PID(KP,KI,KD,false);
 		
 		//start the thread
 		this.start();
@@ -90,8 +119,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	/**
 	 * Drive with Joystick input
 	 */
-	public void inputD( ) {
-		//drive with input
+	private void inputDrive( ) {
 		driveTrain.arcadeDrive(-x.getY(), -y.getX());
 	}
 	
@@ -99,21 +127,32 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	 * Sets autonomous mode
 	 * @param auto : locks the controls if true
 	 */
-	public void setAuto( boolean auto ) {
-		this.auto = auto;
-		gyro.reset();
+	public void setState( DriveStates drive ) {
+		
+		currentState = drive;
+		
+		resetAllSensors();
 		first = true;
 		done = false;
 		lastTime = (int) Timer.getFPGATimestamp();
 		
 	}
 	
+	/**
+	 * Forces the driveBase into teleoperated
+	 */
+	public void forceTeleop(){
+		
+		DriverStation.reportWarning("Forcing current state to Teleop " , false);
+		currentState = DriveStates.TELEOP;
+		
+	}
 	
 	/**
 	 * Its self explanitory
 	 * @param angle : the angle you would like to turn to
 	 */
-	public void turnToAngle( double angle ) {
+	public synchronized void turnToAngle( double angle ) {
 		
 		if( first ) {
 			turnP.set(angle);
@@ -132,7 +171,8 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 				
 				first = true;
 				done = true;
-				System.out.println("done");
+				currentState = DriveStates.LOCKED;
+				System.out.println("done dt set to locked");
 				
 			}
 		}
@@ -142,7 +182,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	/**
 	 * Reset every drivetrain sensor
 	 */ 
-	public void resetAllSensors(){
+	public synchronized void resetAllSensors() {
 		gyro.reset();
 		leftE.reset();
 		rightE.reset();
@@ -153,7 +193,10 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 		return done;
 	}
 	
-	public void stopMotors(){
+	/**
+	 * Stops all motors
+	 */
+	public void stopMotors() {
 		driveTrain.arcadeDrive(0,0);
 	}
 }

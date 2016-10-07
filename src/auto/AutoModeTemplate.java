@@ -1,8 +1,20 @@
 package auto;
 
+/**
+ * The autonomous template that all autos should follow
+ * @author Connor_Hofenbitzer
+ *
+ */
 public abstract class AutoModeTemplate extends Thread{
 	
+	/**
+	 * Run the autonomous
+	 */
 	public abstract void run();
+	
+	/**
+	 * Cancel all running commands
+	 */
 	public abstract void cancel();
 	
 	

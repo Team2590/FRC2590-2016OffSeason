@@ -5,21 +5,25 @@ import org.usfirst.frc.team2590.robot.Robot;
 import autoActions.DriveStraight;
 import autoActions.FixIntake;
 import autoActions.Turn;
-import control.ShootingParameters;
 import control.Vision;
 import edu.wpi.first.wpilibj.Timer;
+import subsystems.Shooter;
 
+/**
+ * <b>TERRAIN</b> takes two shots going over rough terrain
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class TwoBallRoughTerrain extends AutoModeTemplate {
-
-	DriveStraight firstShot , pickUp , secondShot;
-	ShootingParameters shootTheBall;
-	FixIntake dropIntake;
+	
 	Turn turnToTower1 , turnToTower2 , fixRobot , fixRobot2;
+	DriveStraight firstShot , pickUp , secondShot;
+	FixIntake dropIntake;
 	double placeHolder1;
+	Shooter st;
 	
 	public TwoBallRoughTerrain() {
 		
-		shootTheBall = new ShootingParameters(14, 5400, false);
 
 		secondShot = new DriveStraight(14, 8, 8);
 		firstShot = new DriveStraight(14, 8, 8);
@@ -31,8 +35,9 @@ public class TwoBallRoughTerrain extends AutoModeTemplate {
 		turnToTower2 = new Turn();
 		fixRobot = new Turn();
 		
+		st = Shooter.getInstance();
 		placeHolder1 = 0;
-		
+		st.setAuto(false);
 	}
 	
 	@Override
@@ -43,7 +48,7 @@ public class TwoBallRoughTerrain extends AutoModeTemplate {
 		
 		//go for the shot
 		firstShot.run();
-		shootTheBall.start();
+		st.setRPM(5400);
 		waitTillDone(firstShot::done);
 		Timer.delay(.2);
 		
@@ -53,12 +58,11 @@ public class TwoBallRoughTerrain extends AutoModeTemplate {
 		Timer.delay(.2);
 		
 		//fire
-		shootTheBall.startRollers();
+		st.setFeederSpeed(1);
 		Timer.delay(.5);
 		
 		//get Ready to go back
-		shootTheBall.stopRoller();
-		shootTheBall.setAuto(false);
+		st.setFeederSpeed(0);
 		Robot.intake.gimmeTehBall();
 		
 		//start to pick up the next ball
@@ -79,7 +83,8 @@ public class TwoBallRoughTerrain extends AutoModeTemplate {
 		waitTillDone(turnToTower2::finished);
 
 		//shoot the second ball
-		shootTheBall.startRollers();
+		st.setFeederSpeed(1);
+
 	}
 
 	@Override

@@ -1,25 +1,15 @@
 
 package org.usfirst.frc.team2590.robot;
 
-import auto.AutoModeTemplate;
-import auto.ChivalDeAuto;
-import auto.DoJackS;
-import auto.GoOverDefenseAndShoot;
-import auto.GoOverDefenseNoShot;
-import auto.LowBar;
-import auto.ShootAndPickup;
-import auto.TwoBallLowBar;
-import auto.TwoBallRoughTerrain;
-import control.ShootingParameters;
+import autoActions.Turn;
 import control.Vision;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import subsystems.Arm;
 import subsystems.DriveTrain;
+import subsystems.DriveTrain.DriveStates;
 import subsystems.Hood;
 import subsystems.Intake;
 import subsystems.Shooter;
@@ -37,17 +27,17 @@ public class Robot extends IterativeRobot implements RobotMap{
     private final int STRAIGHTPICK = 70;
     private final int CHIVALPICK = 45;
     private final int FLOORPICK = 0;
-    private boolean shooting , firing; 
-    private double startTime , now;
     
-    private int autoType , autoPos;
-    private AutoModeTemplate auto;
-    
+    //other variables
+    private boolean shooting = false; 
+    private boolean firing = false;
+    private double startTime = 0; 
+    private double now = 0;
+  
     //sensors
     private Joystick left , right , operator;
 
     //subsystems and that stuff
-    private static ShootingParameters outerWorks , batter;
     public static DriveTrain drivetrain;
     public static Shooter shooter;
     public static Intake intake;
@@ -60,20 +50,12 @@ public class Robot extends IterativeRobot implements RobotMap{
      * used for any initialization code.
      */
     public void robotInit() {
-    	
-        
-        
+    	//joysticks
         operator = new Joystick(2);
         right = new Joystick(1);
         left = new Joystick(0);
         
-        outerWorks = new ShootingParameters(14, 5400 , true);
-        batter = new ShootingParameters(2, 5000 , true);
-        shooting = false;
-        firing = false;
-        startTime = 0;
-        now = 0;
-        
+       
         //implements a singleton design pattern to assure that only one
         //class uses a class and its motors at one time
         drivetrain = new DriveTrain(left, right);
@@ -82,48 +64,13 @@ public class Robot extends IterativeRobot implements RobotMap{
         hood = Hood.getInstance();
         arm = Arm.getInstance();
         
-      /*  autoType = (int) SmartDashboard.getNumber("Autonomous Mode");
-        autoPos = (int) SmartDashboard.getNumber("Autonomous Position");
-       
-        //lowBar options
-        if(autoType == 0){
-        	//lowBar 1 shot
-        	if(autoPos == 0){
-        		auto = new LowBar();
-        	//two ball in the lowBar
-        	}else if(autoPos == 1){
-        		auto = new TwoBallLowBar();
-        	//drop ball , shoot , pick up second ball
-        	}else{
-        		auto = new ShootAndPickup();
-        	}
-         //Chival autos
-        }else if(autoType == 1){
-        	//go over chival and shoot
-        	auto = new ChivalDeAuto();
-        //Terrain autos
-        }else if(autoType == 2){
-        	if(autoPos == 0){
-        		// go over the terrain but dont shoot
-        		auto = new GoOverDefenseNoShot();
-        	}else if(autoPos == 1){
-        		//go over the terrain and shoot
-        		auto = new GoOverDefenseAndShoot();
-        	}else{
-        		//two ball
-        		auto = new TwoBallRoughTerrain();
-        	}
-        //do nothing
-        }else{
-        	auto = new DoJackS();
-        }*/
+ 
     }
     
 	/**
 	 * Before Auto Runs
 	 */
     public void autonomousInit() {
-    	//auto.run();
     }
 
     /**
@@ -136,8 +83,8 @@ public class Robot extends IterativeRobot implements RobotMap{
      * Before Teleop runs
      */
     public void teleopInit(){
-    	//auto.cancel();
-    	drivetrain.setAuto(false);
+    	drivetrain.setState(DriveStates.TELEOP);
+    	drivetrain.forceTeleop();
     	shooter.setAuto(true);
     }
     
@@ -152,9 +99,10 @@ public class Robot extends IterativeRobot implements RobotMap{
         	intake.gimmeTehBall();
          } else if (left.getRawButton(2)) { 
         	intake.spitOut();
-        	batter.reverseRollers();
+        	shooter.setFeederSpeed(-1);
          } else { 
-        	 shooter.setAuto(shooting);
+        	 if(!shooting)
+        		 shooter.setFeederSpeed(0);
         	intake.stopBoi();
         }
         
@@ -174,40 +122,35 @@ public class Robot extends IterativeRobot implements RobotMap{
         
         //right thumb button turns to target
         if(right.getRawButton(2)) {
-        	
-        	drivetrain.setAuto(true);
-
-        	while(!drivetrain.done())
-        		drivetrain.turnToAngle(Vision.getTargetOffset());
-        	
-        	if(drivetrain.done()){
-        		drivetrain.setAuto(false);
-        	}
-      
+        	Turn turnNow = new Turn();
+        	turnNow.startTurn(Vision.getTargetOffset());
+        	drivetrain.setState(DriveStates.TELEOP);
+        	drivetrain.forceTeleop();
         }
         
         //shooter
         if(right.getRawButton(1)) {
         	//trigger is outerworks shot
-        	Robot.hood.setHood(15);
-    		Robot.shooter.setRPM(5400);
-    		Robot.shooter.setAuto(true);
+    		shooting = true;
+        	hood.setHood(19);
+    		shooter.setRPM(5500);
         	
         } else if(left.getRawButton(5)) {
         	//batter shot
-        	Robot.hood.setHood(4);
-    		Robot.shooter.setRPM(5400);
-    		Robot.shooter.setAuto(true);
-
+    		shooting = true;
+        	hood.setHood(4);
+    		shooter.setRPM(5400);
         } else {
         	//stop shooting
-        	if(!firing){
         	shooting = false;
+        	if(!firing){
     		Robot.shooter.setRPM(0);
         	}
         	
         }
         
+	   shooter.setAuto(shooting);
+		
        //if we see the target , start autoShooting
        if(Vision.seesTarget() && Vision.getDistance() <= 14) {
     	    //we set fire to true
@@ -215,8 +158,6 @@ public class Robot extends IterativeRobot implements RobotMap{
     	    
     	    //start shooting and dont shoot until the driver tells us to
         	shooter.setRPM(5000);
-        	batter.setAuto(shooting);
-        	outerWorks.setAuto(shooting);
         	
         	//what time is it??
         	startTime = Timer.getFPGATimestamp();
@@ -236,19 +177,21 @@ public class Robot extends IterativeRobot implements RobotMap{
         //force the jelly to shoot
         if(right.getRawButton(6)){
         	//force the overrides and shoot
-        	batter.startRollers();
+        	shooter.setFeederSpeed(1);
         } else {
         	//stop overriding
-        	batter.stopRoller();
+        	if(!shooting){
+        		shooter.setFeederSpeed(0);
+        	}
         }
         
         //preStart the batter shot
         if(operator.getRawButton(1)) {
-        	outerWorks.setAuto(shooting);
-        	outerWorks.start();
+        	hood.setHood(4);
+        	shooter.setRPM(5400);
         } else {
-        	if(!shooting)
-        		outerWorks.cancel();
+        	if(!shooting && !firing)
+        		shooter.setRPM(0);
         }
         
         //force the arm up or down

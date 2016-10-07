@@ -1,9 +1,19 @@
 package autoActions;
 
+import org.usfirst.frc.team2590.robot.Robot;
+
+import subsystems.DriveTrain;
+import subsystems.DriveTrain.DriveStates;
 import trajectory.DualTrajectory;
 import trajectory.TrajectoryFollow;
 import trajectory.TrajectoryReader;
 
+/**
+ * <b>DRIVETRAIN</b> follow a given path
+ * @author Connor_Hofenbitzer
+ * @see DriveTrain
+ * @see TrajectoryFollow
+ */
 public class DriveTrajectory{
 
     TrajectoryFollow follower;
@@ -36,6 +46,7 @@ public class DriveTrajectory{
 
 	
 	public void startPath() {
+		Robot.drivetrain.setState(DriveStates.TRAJECTORY);
 		follower.start();
 		started = true;		
 	}

@@ -1,8 +1,16 @@
 package autoActions;
 
+import org.usfirst.frc.team2590.robot.Robot;
+
 import edu.wpi.first.wpilibj.Timer;
 import subsystems.Arm;
+import subsystems.DriveTrain.DriveStates;
 
+/**
+ * <b>ARM</b> drops the arm , intended for begining of auto
+ * @author Connor_Hofenbitzer
+ * @see Arm.java
+ */
 public class FixIntake{
 
 	private boolean done = false;
@@ -16,8 +24,9 @@ public class FixIntake{
 	 * Just puts the intake down
 	 */
 	public void downWithTheIntake() {
-		inta.setMotorSpeed(-0.7);
-		Timer.delay(.4);
+		Robot.drivetrain.setState(DriveStates.LOCKED);
+		inta.setMotorSpeed(-0.8);
+		Timer.delay(.3);
 		inta.setMotorSpeed(0);
 		inta.setEnabled(true);
 		done = true;

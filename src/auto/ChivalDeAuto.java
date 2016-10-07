@@ -4,15 +4,23 @@ import org.usfirst.frc.team2590.robot.Robot;
 
 import autoActions.DriveStraight;
 import autoActions.FixIntake;
-import control.ShootingParameters;
 import control.Vision;
 import edu.wpi.first.wpilibj.Timer;
+import subsystems.DriveTrain.DriveStates;
+import subsystems.Shooter;
 
+/**
+ * <b>CHIVAL</b> Drive over the chival, Turns around, looks for the target,
+ * drives to the tower,
+ * and shoots
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class ChivalDeAuto extends AutoModeTemplate{
 
-	private static DriveStraight driveToChival , driveOverChival , driveToTower;
-	private static FixIntake intakeDown; 
-	private static ShootingParameters takeTheShot;
+	DriveStraight driveToChival , driveOverChival , driveToTower;
+	FixIntake intakeDown; 
+	Shooter st;
 	
 	public ChivalDeAuto() {
 
@@ -21,18 +29,17 @@ public class ChivalDeAuto extends AutoModeTemplate{
 		driveOverChival = new DriveStraight(-3, 3, 3);
 		driveToTower = new DriveStraight(-4, 6, 6);
 		
-		takeTheShot = new ShootingParameters(12, 5400, false);
 		intakeDown = new FixIntake();
+		st = Shooter.getInstance();
+		st.setAuto(false);
 	}
 	
 
 	@Override
 	public void run() {
 		
-		Robot.drivetrain.setAuto(true);
 		
 		//drive to chival
-		Robot.drivetrain.resetAllSensors();
 		driveToChival.run();
 		waitTillDone(driveToChival::done);
 		Timer.delay(0.2);
@@ -43,8 +50,8 @@ public class ChivalDeAuto extends AutoModeTemplate{
 		
 		//drive over chival
 		driveOverChival.run();
-		Robot.shooter.setAuto(false);
-		takeTheShot.start();
+		st.setAuto(false);
+		st.setRPM(5400);
 		waitTillDone(driveOverChival::done);
 		Timer.delay(0.2);
 		
@@ -53,18 +60,15 @@ public class ChivalDeAuto extends AutoModeTemplate{
 		waitTillDone(driveToTower::done);
 		
 		//180 turn
-		Robot.drivetrain.setAuto(true);
 		while(!Robot.drivetrain.done())
 		Robot.drivetrain.turnToAngle(180);
 		
 		//gotta be on target or bust m9
-		Robot.drivetrain.setAuto(true);
 		while(!Robot.drivetrain.done())
 		Robot.drivetrain.turnToAngle(Vision.getTargetOffset());
 		
 		//360 no scope m8
-		takeTheShot.startRollers();
-		
+		st.setFeederSpeed(1);
 	}
 
 	@Override
@@ -72,9 +76,8 @@ public class ChivalDeAuto extends AutoModeTemplate{
 		driveToChival.cancel();
 		driveOverChival.cancel();
 		driveToTower.cancel();
-		takeTheShot.cancel();
 		Robot.intake.stopBoi();
-		Robot.drivetrain.setAuto(false);
+		Robot.drivetrain.setState(DriveStates.TELEOP);
 	}
 
 }

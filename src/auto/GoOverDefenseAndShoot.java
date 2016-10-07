@@ -10,6 +10,12 @@ import edu.wpi.first.wpilibj.Timer;
 import subsystems.Hood;
 import subsystems.Shooter;
 
+/**
+ * <b>TERRAIN</b> Goes over a defense backwards 
+ * and shoots the ball in its intake
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class GoOverDefenseAndShoot extends AutoModeTemplate{
 
 	static int position , shotRPM, hoodA , currentRotation1 , currentRotation2;
@@ -36,8 +42,10 @@ public class GoOverDefenseAndShoot extends AutoModeTemplate{
 		turnWhenCloser = new Turn();
 		Noscope = new Turn();
 		turnToZ = new Turn();
+		
 		st = Shooter.getInstance();
 		hd = Hood.getInstance();
+		st.setAuto(false);
 	}
 	
 

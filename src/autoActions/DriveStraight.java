@@ -1,9 +1,18 @@
 package autoActions;
 
+import org.usfirst.frc.team2590.robot.Robot;
+
+import subsystems.DriveTrain.DriveStates;
 import trajectory.DualTrajectory;
 import trajectory.TrajectoryFollow;
 import trajectory.TrajectoryGen;
 
+/**
+ * <b>DRIVETRAIN</b> Drive Forward given distance , max velocity and acceleration
+ * @see DriveTrain.java
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class DriveStraight{
 
 	TrajectoryFollow follower;
@@ -15,6 +24,7 @@ public class DriveStraight{
 
 	
 	public void run() {
+		Robot.drivetrain.setState(DriveStates.TRAJECTORY);
 		follower.start();
 		started = true;
 	}

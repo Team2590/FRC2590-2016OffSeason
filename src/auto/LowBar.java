@@ -7,10 +7,16 @@ import autoActions.FixIntake;
 import autoActions.Turn;
 import control.Vision;
 import edu.wpi.first.wpilibj.Timer;
+import subsystems.DriveTrain.DriveStates;
 import subsystems.Hood;
 import subsystems.Intake;
 import subsystems.Shooter;
 
+/**
+ * <b>LOWBAR</b> Drives through the lowbar and takes the shot
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class LowBar extends AutoModeTemplate{
 	
 	static DriveTrajectory PickUpAndRun;
@@ -28,20 +34,21 @@ public class LowBar extends AutoModeTemplate{
 		PickUpAndRun = new DriveTrajectory("low_bar_to_left_batter_slow");
 		dropBall = new FixIntake();
 		turnToTarget = new Turn();
+		
 		st = Shooter.getInstance();
 		in = Intake.getInstance();
 		hd = Hood.getInstance();
+		st.setAuto(false);
 	}
 	
 	public void run(){
 		
 		//make sure everythings alright?
-		Robot.drivetrain.setAuto(true);
+		Robot.drivetrain.setState(DriveStates.LOCKED);
 		st.setAuto(false);
 		hd.setHood(0);
 		
 		//fix all the stuffs 
-		Robot.drivetrain.resetAllSensors();
 		dropBall.downWithTheIntake();
 		in.gimmeTehBall();
 		Timer.delay(1);
@@ -76,7 +83,7 @@ public class LowBar extends AutoModeTemplate{
 		Robot.shooter.setAuto(true);
 		Robot.intake.stopBoi();
 		PickUpAndRun.cancel();
-		Robot.drivetrain.setAuto(false);
+		Robot.drivetrain.setState(DriveStates.TELEOP);
 	}
 	
 	

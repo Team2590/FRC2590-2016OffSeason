@@ -8,27 +8,20 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * All day batter shots
+ * <b>SUBSYSTEM</b> All day batter shots
  * @author Connor_Hofenbitzer
- *
  */
 public class Shooter extends Thread implements RobotMap {
 	
-	private static Shooter st = null;
+	private static Shooter st = new Shooter();
 	
 	public static Shooter getInstance(){	
-		if(st == null){
-			//thread safe
-			synchronized(Shooter.class){
-				if(st == null){
-					st = new Shooter();
-				}
-			}
-		}
 		return st;
 	}
 	
-	private boolean auto , tempForceFire;
+	private boolean tempForceFire = false;
+	private boolean auto = true;
+
 	private BangBangController bang;
 	private Encoder shooterEncoder;
 	private Victor  shooterMotor;
@@ -36,11 +29,8 @@ public class Shooter extends Thread implements RobotMap {
 
 	
 
-	//so I know someone will ask tempForce fire means that if we get to setRPM it forces the 
-	//jelly to shoot , even if we go below RPM
 	public void run() {
 		while( true ) {
-
 			//update the shooter
 			bang.update();
 			
@@ -52,17 +42,19 @@ public class Shooter extends Thread implements RobotMap {
 			//if its ready to shoot then shoot
 			if(auto) {
 				//allows interface between two threads
-				synchronized(this){
-				/*if(tempForceFire)
-					j.feedToShooter();
-				else
-					j.stopHT();*/
+				synchronized(this) {
+					if(tempForceFire) {
+						j.feedToShooter();
+					} else {
+						j.stopHT();
+					}
 				}
-			} 
+			}
 			
 			//if its at 0 , stop shooting
-			if(bang.returnRPM() == 0){
+			if(bang.returnRPM() == 0) {
 				tempForceFire = false;
+				j.stopHT();
 			}
 		}
 		
@@ -78,10 +70,7 @@ public class Shooter extends Thread implements RobotMap {
 		
 		//seperate classes
 		bang = new BangBangController(shooterEncoder, shooterMotor);
-		j = new Jelly();
-		
-		//constants
-		auto = true;
+		j = Jelly.getIntance();
 		
 		//start the thread
 		this.start();
@@ -114,10 +103,10 @@ public class Shooter extends Thread implements RobotMap {
 		switch (speed) {
 		case 1: 
 			j.feedToShooter();
-		break;
+			break;
 		case -1: 
 			j.deAquireBall();
-		break;
+			break;
 		default: 
 			j.stopHT();
 		}

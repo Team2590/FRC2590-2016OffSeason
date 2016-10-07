@@ -8,51 +8,44 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * Manipulating Arm
+ * <b>SUBSYSTEM</b> Manipulating Arm
  * @author Connor_Hofenbitzer
- *
  */
 public class Arm extends Thread implements RobotMap{
 	
-	private static Arm arm = null;
+	private static Arm arm = new Arm();
 	
 	public static Arm getInstance(){
-		if(arm == null){
-			//thread safe
-			synchronized(Arm.class){
-				if(arm == null){
-					arm = new Arm();
-				}
-			}
-		}
 		return arm;
 	}
 	
-	private double kP , kI, kD , zeroPosition;
-	private PIDController armController; 
-	private AnalogPotentiometer armPot;
+	//variables
+	private final double KP = 0.015;
+	private final double KI = 0.0000175;
+	private final double ZEROPOSITION = 12;
+
+	private boolean enabled = true;
+
+	//controllers
 	private Victor armMotor;
-	private boolean enabled;
+	private AnalogPotentiometer armPot;
+	private PIDController armController; 
 	
+	//gearing ratio
 	private static final double GEAR_RATIO = (42.0/15.0);
 
 	/**
 	 * Intake Manipulator , used for things such as chival de frise 
 	 */
 	public Arm(){
-		//constants
-		kP = 0.015;
-		kI = 0.0000175;
-		enabled = true;
-		zeroPosition = 12;
-
+		
 		//motors and sensors
 		armMotor = new Victor(PWM_intakeArticulate);
 		armPot = new AnalogPotentiometer(Analog_IntakePos , -360 , 360);
 		armPot.setPIDSourceType(PIDSourceType.kDisplacement);
 
 		//PID controller and its settings
-		armController = new PIDController(kP , kI , kD , armPot , armMotor);
+		armController = new PIDController(KP , KI , 0 , armPot , armMotor);
 		armController.setInputRange(0 , 360);
 		armController.setOutputRange(-.2 , .5);
 		armController.setAbsoluteTolerance(.5);
@@ -66,7 +59,7 @@ public class Arm extends Thread implements RobotMap{
 	public void setSetpoint(double setPoint){
 		
 		//math which calulates offset , and that stuff
-		double angle = (setPoint * GEAR_RATIO) + zeroPosition;
+		double angle = (setPoint * GEAR_RATIO) + ZEROPOSITION;
 		
 		//reset I constant and set the setPoint then go to that angle
 		armController.reset();

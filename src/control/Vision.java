@@ -3,7 +3,9 @@ package control;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- *Get the vision stuff from the dashboard
+ * <b>COMMS</b> gets vision data from the dashboard
+ * @author Connor_Hofenbitzer
+ *
  */
 public class Vision {
 	
@@ -39,14 +41,8 @@ public class Vision {
 	 */
 	public static double getHoodAngle(){
 		double x = SmartDashboard.getNumber("Distance to Target", 7);
-		//Enterpolated data
-		if (x <= 8.3){
-			return + .56108188 * Math.pow(x, 3) - 12.764580505 * Math.pow(x, 2) + 99.21279705 * x - 236.87571848;
-		} else if(x < 2){
-			return 29; // Assume outer works
-		} else {
-			return - .06715505 * Math.pow(x, 3) + 1.52593244 * Math.pow(x, 2) - 8.95116441 * x + 31.707057248;
-		}
+		//HEY REMEMBER TO REINTERPOLATE THIS DATA
+		return x;
 	}
 	
 }

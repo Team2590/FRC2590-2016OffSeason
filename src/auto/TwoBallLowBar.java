@@ -11,6 +11,11 @@ import subsystems.Hood;
 import subsystems.Intake;
 import subsystems.Shooter;
 
+/**
+ * <b>LOWBAR</b> auto that takes two shots through the lowbar
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class TwoBallLowBar extends AutoModeTemplate{
 	
 	DriveTrajectory shootFirstBall , pickUpSecond , shootLast;
@@ -18,8 +23,8 @@ public class TwoBallLowBar extends AutoModeTemplate{
 	final static int HOODANGLE = 15;
 	FixIntake DropAndPickUp;
 	Shooter st;
-	Hood hd;
 	Intake in;
+	Hood hd;
 	
 	public TwoBallLowBar() {
 		
@@ -36,8 +41,9 @@ public class TwoBallLowBar extends AutoModeTemplate{
 		turnToShoot2 = new Turn();
 		
 		st = Shooter.getInstance();
-		hd = Hood.getInstance();
 		in = Intake.getInstance();
+		hd = Hood.getInstance();
+		st.setAuto(false);
 	}
 	
 	@Override

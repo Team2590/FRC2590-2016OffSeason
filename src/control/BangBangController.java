@@ -3,6 +3,11 @@ package control;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Victor;
 
+/**
+ * <b>CONTROLLER</b> pretty basic bang bang controller
+ * @author Connor_Hofenbitzer
+ *
+ */
 public class BangBangController {
 	
 	//constants
@@ -38,19 +43,19 @@ public class BangBangController {
 	 * Update the motors to go to the RPM setpoint
 	 */
 	public void update(){
-		//are we ready to fire
-		readyToShoot = (-RPMCounter.getRate() < (RPMSetpoint + TOLERANCE/2.0)) &&
-					   (-RPMCounter.getRate() > (RPMSetpoint - TOLERANCE/2.0) && 
-					     RPMSetpoint != 0);
 		
 		//if we are that means we are above setpoint and need to slow down , else  fire away
-		if(  -RPMCounter.getRate() < ( RPMSetpoint - TOLERANCE ) && RPMSetpoint != 0 ){
+		if( RPMCounter.getRate() < ( RPMSetpoint ) && RPMSetpoint != 0 ){
 			shooterMotor.set(1);
-		}else if( -RPMCounter.getRate() > ( RPMSetpoint + TOLERANCE ) && RPMSetpoint != 0){
+		}else if( RPMCounter.getRate() > ( RPMSetpoint + TOLERANCE ) && RPMSetpoint != 0){
 			shooterMotor.set(0.5);
 		}else if( RPMSetpoint == 0 ){
 			shooterMotor.set(0);
 		}	
+		
+		//check if we are allowed to shoot
+		readyToShoot = (RPMCounter.getRate() > RPMSetpoint - TOLERANCE);
+		
 	}
 	
 	/**

@@ -7,25 +7,23 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * We in da hood
+ * <b>SUBSYSTEM</b> We in da hood
  * @author Connor_Hofenbitzer
  */
 public class Hood extends Thread implements RobotMap{
 	
-	private static Hood hd = null;
+	private static Hood hd = new Hood();
 	
 	public static Hood getInstance(){
-		if(hd == null){
-			synchronized(Hood.class){
-				if(hd == null){
-					hd = new Hood();
-				}
-			}
-		}
 		return hd;
 	}
+	
+	//variables
+	private final double KP = 0.055;
+	private final double KI = 0.016;
+	
+	//controllers
 	private Victor hoodMotor;
-	private double kP, kI, kD ;
 	private PIDController hoodCon;
 	private AnalogPotentiometer hoodPot;
 	
@@ -36,10 +34,6 @@ public class Hood extends Thread implements RobotMap{
 	 */
 	public Hood() {
 		
-		//constants
-		kP = 0.055;
-		kI = 0.017;
-		kD = 0.0;
 		
 		//motors and sensors
 		hoodMotor = new Victor( PWM_hood );
@@ -47,10 +41,9 @@ public class Hood extends Thread implements RobotMap{
 		
 		hoodPot = new AnalogPotentiometer(Analog_HoodPos, 360, -119);
 		
-		
 		//controller settings
-		hoodCon = new PIDController(kP, kI, kD, hoodPot, hoodMotor);
-		hoodCon.setInputRange(3,17);
+		hoodCon = new PIDController(KP, KI, 0, hoodPot, hoodMotor);
+		hoodCon.setInputRange(3.5,20);
 		hoodCon.setOutputRange(-.4, .4);
 		hoodCon.setAbsoluteTolerance(.5);
 	}
