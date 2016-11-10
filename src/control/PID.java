@@ -3,7 +3,7 @@ package control;
 import edu.wpi.first.wpilibj.Timer;
 
 /**
- * Its a pretty PID loop
+ * <b>CONTROLLER</b>Its a pretty PID loop
  * Thank you to antonio papa of 5895
  */
 public class PID {
@@ -12,14 +12,16 @@ public class PID {
 	private final double Ki;
 	private final double Kd;
 	
+	private double capU;
 	private double setpoint;
 	private double lastTime = 0;
 	private double errorSum = 0;
 	private double lastError = 0;
 	private double lastSetpoint = 0;
+	
 	boolean flipped;
 
-	public PID(double Kp, double Ki, double Kd , boolean flipped) {
+	public PID(double Kp, double Ki, double Kd , boolean flipped , double capU) {
 		this.Kp = Kp;
 		this.Ki = Ki;
 		this.Kd = Kd;
@@ -28,6 +30,7 @@ public class PID {
 		errorSum = 0;
 		lastError = 0;
 		lastSetpoint = 0;
+		this.capU = capU;
 		this.flipped = flipped;
 	}
 	
@@ -77,11 +80,11 @@ public class PID {
 		
 		double output = Kp * error + Ki * errorSum + Kd * dError;
 
-		if(output > 0.3){
-			output = 0.3;
+		if(output > capU){
+			output = capU;
 		} 
-		if(output < -0.3){
-			output = -0.3;
+		if(output < -capU){
+			output = -capU;
 		}
 		//set variables for next run through loop
 		lastTime = time;

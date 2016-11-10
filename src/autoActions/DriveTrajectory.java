@@ -21,27 +21,26 @@ public class DriveTrajectory{
 	boolean started = false;
 	boolean reverseHeadings = false;
 	
-	public DriveTrajectory(String profile){
-		
+	public DriveTrajectory(String profile , boolean reset) {
+		//init the reader and feed it the profile name
 		TrajectoryReader reader = new TrajectoryReader(profile);
 		segs = reader.getSegmentArray();
-		
-		follower = new TrajectoryFollow(segs);
+		follower = new TrajectoryFollow(segs, reset);
 	}
 	
-	public DriveTrajectory(String profile, boolean rev, double offset){
+	public DriveTrajectory(String profile, boolean rev, double offset , boolean reset) {
 		
 		TrajectoryReader reader = new TrajectoryReader(profile);
 		reader.setReverseHeading(rev);
 		reader.setHeadingOffset(offset);
 		segs = reader.getSegmentArray();
 		
-		follower = new TrajectoryFollow(segs);
+		follower = new TrajectoryFollow(segs , reset);
 	}
 	
 	
 	public boolean end() {
-		return !follower.isAlive() && started;
+		return follower.isFinishedPath();
 	}
 
 	

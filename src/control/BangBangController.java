@@ -11,9 +11,10 @@ import edu.wpi.first.wpilibj.Victor;
 public class BangBangController {
 	
 	//constants
-	private int RPMSetpoint;
-	private boolean readyToShoot;
+	private int RPMSetpoint = 0;
 	private final double TOLERANCE = 50;
+	private boolean readyToShoot = false;
+
 	
 	//sensors
 	private Encoder RPMCounter;
@@ -24,11 +25,13 @@ public class BangBangController {
 	 * @param RPMCounter : the encoder that measures RPM
 	 * @param shooterMotor : the shooter motor
 	 */
-	public BangBangController(Encoder RPMCounter , Victor shooterMotor){
-		RPMSetpoint = 0;
-		readyToShoot = false;
+	public BangBangController(Encoder RPMCounter , Victor shooterMotor){		
 		this.RPMCounter = RPMCounter;
 		this.shooterMotor = shooterMotor;
+	}
+	
+	public double giveStp(){
+		return RPMSetpoint;
 	}
 	
 	/**
@@ -45,16 +48,19 @@ public class BangBangController {
 	public void update(){
 		
 		//if we are that means we are above setpoint and need to slow down , else  fire away
-		if( RPMCounter.getRate() < ( RPMSetpoint ) && RPMSetpoint != 0 ){
-			shooterMotor.set(1);
-		}else if( RPMCounter.getRate() > ( RPMSetpoint + TOLERANCE ) && RPMSetpoint != 0){
-			shooterMotor.set(0.5);
-		}else if( RPMSetpoint == 0 ){
+		if( RPMCounter.getRate() < ( RPMSetpoint ) && 
+			RPMSetpoint != 0 ) {
+				shooterMotor.set(1);
+					
+		} else if( RPMCounter.getRate() > ( RPMSetpoint + TOLERANCE ) && 
+				   RPMSetpoint != 0 ) {
+					  shooterMotor.set(0);
+					
+		} else if(RPMSetpoint == 0) {
 			shooterMotor.set(0);
-		}	
-		
+		}
 		//check if we are allowed to shoot
-		readyToShoot = (RPMCounter.getRate() > RPMSetpoint - TOLERANCE);
+		readyToShoot = (RPMCounter.getRate() > RPMSetpoint);
 		
 	}
 	

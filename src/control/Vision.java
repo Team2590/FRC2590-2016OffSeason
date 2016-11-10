@@ -9,13 +9,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Vision {
 	
-	static double offset = -4; //Decrease if missing right
+	static double offset = -2; //closer to 0 or greater than 0 = right
+	static double FOV = 60;
+	
 
 	/**
 	 * get the offset to the target
 	 * @return value from 45ish to -45ish
 	 */
-	public static double getTargetOffset(){
+	public static double getTargetOffset() {
+		//subtract (X - center pixel) * (3.33) 
+		//		return  ( (table.getNumber("centerX",0) - 100) * (pixels / FOV) ) + offset; //35.25
+
 		return SmartDashboard.getNumber("Target Center X", 0) * 31 + offset; //35.25
 	}
 	

@@ -12,17 +12,20 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Intake extends Thread implements RobotMap{
 
+	//singleton
 	private static Intake in = new Intake();
 	
-	public static Intake getInstance(){
+	public static Intake getInstance() {
 		return in;
 	}
 	
+	//state machine and motor
 	private Victor intakeMotor;
 	private IntakeEnumHandler handler;
 
-	public void run(){
-		while(true){
+	public void run() {
+		while(true) {
+			//update the handler for the rollers
 			handler.update();		
 		}
 	}
@@ -30,28 +33,28 @@ public class Intake extends Thread implements RobotMap{
 	/**
 	 * Intake
 	 */
-	public void gimmeTehBall(){
+	public void gimmeTehBall() {
 		handler.switchIntakeMode(IntakeStates.INTAKE);
 	}
 	
 	/**
 	 * Outake
 	 */
-	public void spitOut(){
+	public void spitOut() {
 		handler.switchIntakeMode(IntakeStates.EXAUST);
 	}
 	
 	/**
 	 * Stop the motor
 	 */
-	public void stopBoi(){
+	public void stopBoi() {
 		handler.switchIntakeMode(IntakeStates.STATIONARY);
 	}
 	
 	/**
 	 * You have to be pretty thick to not know what this code is 
 	 */
-	public Intake(){
+	public Intake() {
 		intakeMotor = new Victor(PWM_intakeRollers);
 		handler = new IntakeEnumHandler(IntakeStates.STATIONARY, intakeMotor);
 		this.start();

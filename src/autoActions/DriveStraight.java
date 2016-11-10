@@ -2,6 +2,7 @@ package autoActions;
 
 import org.usfirst.frc.team2590.robot.Robot;
 
+import subsystems.DriveTrain;
 import subsystems.DriveTrain.DriveStates;
 import trajectory.DualTrajectory;
 import trajectory.TrajectoryFollow;
@@ -18,19 +19,25 @@ public class DriveStraight{
 	TrajectoryFollow follower;
 	boolean started = false;
 	
-	public DriveStraight(double distance, double maxVel, double maxAcc){
-		follower = new TrajectoryFollow(new DualTrajectory(TrajectoryGen.generateStraightTrajectory(distance, maxVel, maxAcc)));
+	public DriveStraight(double distance, double maxVel, double maxAcc) {
+		follower = new TrajectoryFollow(
+				   new DualTrajectory(
+					   TrajectoryGen.generateStraightTrajectory( distance, 
+							   									 maxVel, 
+							   									 maxAcc)) , true);
+		
 	}
 
 	
 	public void run() {
+		Robot.drivetrain.resetAllSensors();
 		Robot.drivetrain.setState(DriveStates.TRAJECTORY);
 		follower.start();
-		started = true;
 	}
 
 	public boolean done() {
-		return follower.isFinishedPath() && started;
+		System.out.println("followe state : " + follower.isAlive());
+		return !follower.isAlive();
 	}
 	
 	public void cancel(){

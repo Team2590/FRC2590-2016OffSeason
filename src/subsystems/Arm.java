@@ -13,18 +13,18 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Arm extends Thread implements RobotMap{
 	
+	//singleton
 	private static Arm arm = new Arm();
 	
-	public static Arm getInstance(){
+	public static Arm getInstance() {
 		return arm;
 	}
+
 	
 	//variables
 	private final double KP = 0.015;
 	private final double KI = 0.0000175;
 	private final double ZEROPOSITION = 12;
-
-	private boolean enabled = true;
 
 	//controllers
 	private Victor armMotor;
@@ -34,6 +34,8 @@ public class Arm extends Thread implements RobotMap{
 	//gearing ratio
 	private static final double GEAR_RATIO = (42.0/15.0);
 
+
+	
 	/**
 	 * Intake Manipulator , used for things such as chival de frise 
 	 */
@@ -49,26 +51,29 @@ public class Arm extends Thread implements RobotMap{
 		armController.setInputRange(0 , 360);
 		armController.setOutputRange(-.2 , .5);
 		armController.setAbsoluteTolerance(.5);
-		this.start();
+		
+		
 	}
 	
 	/**
 	 * Arm goes to the angle
 	 * @param setPoint angle to go to
 	 */
-	public void setSetpoint(double setPoint){
-		
+	public void setSetpoint(double setPoint) {
+	
 		//math which calulates offset , and that stuff
 		double angle = (setPoint * GEAR_RATIO) + ZEROPOSITION;
 		
-		//reset I constant and set the setPoint then go to that angle
-		armController.reset();
-		armController.setSetpoint(angle);
-		
-		if(enabled){
+		//conserve power
+		if( setPoint < 7 ) {
+			setMotorSpeed(0);
+		} else {
+			//reset I constant and set the setPoint then go to that angle
+			armController.reset();
+			armController.setSetpoint(angle);
 			armController.enable();
 		}
-
+		
 	}
 	
 	/**
@@ -76,15 +81,14 @@ public class Arm extends Thread implements RobotMap{
 	 * @param speed
 	 */
 	public void setMotorSpeed(double speed){
-		enabled = false;
+		armController.disable();
 		armMotor.set(speed);
 	}
 	
-	/**
-	 * Set enabled 
-	 * @param enabled
-	 */
-	public void setEnabled(boolean enabled){
-		this.enabled = enabled;
+	
+	public double returnAngle(){
+		return armPot.pidGet() / GEAR_RATIO - ZEROPOSITION;
 	}
+	
+	
 }

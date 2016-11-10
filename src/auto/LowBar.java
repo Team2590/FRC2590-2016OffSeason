@@ -2,89 +2,96 @@ package auto;
 
 import org.usfirst.frc.team2590.robot.Robot;
 
+import autoActions.DriveStraight;
 import autoActions.DriveTrajectory;
 import autoActions.FixIntake;
 import autoActions.Turn;
 import control.Vision;
 import edu.wpi.first.wpilibj.Timer;
-import subsystems.DriveTrain.DriveStates;
-import subsystems.Hood;
-import subsystems.Intake;
-import subsystems.Shooter;
 
-/**
- * <b>LOWBAR</b> Drives through the lowbar and takes the shot
- * @author Connor_Hofenbitzer
- *
- */
 public class LowBar extends AutoModeTemplate{
-	
-	static DriveTrajectory PickUpAndRun;
-	static FixIntake dropBall;
-	static Turn turnToTarget;
-		   Shooter st;
-		   Intake in;
-		   Hood hd;
-		   
-	static final int SHOTSPEED = 5000;
-	static final int HOODANGLE = 12;
-	
-	public LowBar(){
 
-		PickUpAndRun = new DriveTrajectory("low_bar_to_left_batter_slow");
-		dropBall = new FixIntake();
-		turnToTarget = new Turn();
+	DriveTrajectory back;
+	DriveTrajectory go;
+	DriveStraight forward1 , forward2;
+	Turn turnToTarget;
+    FixIntake fix;
 		
-		st = Shooter.getInstance();
-		in = Intake.getInstance();
-		hd = Hood.getInstance();
-		st.setAuto(false);
+    @Override
+	public void init() {
+		go = new DriveTrajectory("low_bar_to_left_batter_slow", true);
+		forward1 = new DriveStraight(19, 6, 6);
+		forward2 = new DriveStraight(-4, 6, 6);
+		turnToTarget = new Turn();
+		fix = new FixIntake();		
 	}
 	
-	public void run(){
+	@Override
+	public void run() {
+		//fix all the stuffs
+		//Robot.intake.gimmeTehBall();
+		Robot.hood.setHood(0);
+		fix.downWithTheIntake();
+			
+		//start the follower and fix everything
+		go.startPath();
+		while(!go.end()) {
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
-		//make sure everythings alright?
-		Robot.drivetrain.setState(DriveStates.LOCKED);
-		st.setAuto(false);
-		hd.setHood(0);
-		
-		//fix all the stuffs 
-		dropBall.downWithTheIntake();
-		in.gimmeTehBall();
-		Timer.delay(1);
-		
-		//were done picking up the ball , get ready to drive
-		st.setRPM(SHOTSPEED);
-		in.stopBoi();
-		
-		//start the follower
-		PickUpAndRun.startPath();
-		//we are waiting until the follower is finished , but if we see a tower , get the hood ready
-		waitTillDone(PickUpAndRun::end , Vision.seesTarget() , () -> Robot.hood.setHood(HOODANGLE));
-		Timer.delay(.1);
+
+		Robot.shooter.setRPM(5400);
 		Robot.drivetrain.stopMotors();
+	
+		//turnToTarget.startTurn(45);
+
+		Timer.delay(.5);
+
+		//set The hood once over the lowbar
+		Robot.hood.setHood(20);
+			
+		//turn to target
+		turnToTarget.startTurn(Vision.getTargetOffset());
+		while(!Robot.drivetrain.done()) {
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Timer.delay(1);
+
 		
-		//turn to target and make sure the hoods up
-    	hd.setHood(12);
-    	turnToTarget.startTurn(Vision.getTargetOffset());
-    	waitTillDone(turnToTarget::finished);
-    	
-    	//when finished driving make sure the motors are stopped
-    	Robot.drivetrain.stopMotors();
-    	
-    	//shoot
-		st.setFeederSpeed(1);
+		//double check this ish!
+		turnToTarget.startTurn(Vision.getTargetOffset());
+		while(!Robot.drivetrain.done()) {
+			try {
+				Thread.sleep(5);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Timer.delay(.5);
+
+		//fire
+		Robot.shooter.setFeederSpeed(1);
 		
 	}
 
 	@Override
 	public void cancel() {
+		// TODO Auto-generated method stub
+		go.cancel();
 		Robot.shooter.setRPM(0);
-		Robot.shooter.setAuto(true);
-		Robot.intake.stopBoi();
-		PickUpAndRun.cancel();
-		Robot.drivetrain.setState(DriveStates.TELEOP);
+		Robot.drivetrain.forceTeleop();
+		Robot.shooter.setFeederSpeed(0);
 	}
-	
 	
 }

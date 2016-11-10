@@ -7,4 +7,5 @@ public abstract interface Checkable {
  * @return boolean command done
  */
 public boolean done();
+
 }

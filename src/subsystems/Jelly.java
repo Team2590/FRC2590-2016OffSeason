@@ -12,19 +12,22 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Jelly extends Thread implements RobotMap{
 	
+	//signleton
 	private static Jelly j = new Jelly();
 	
 	public static Jelly getIntance(){
 		return j;
 	}
 	
+	//state machine and motor
 	private Victor shooterThingy;
 	private IntakeEnumHandler handler;
 	
 	public void run() {
 		while(true) {
-			synchronized(this){
-			handler.update();
+			//this needs to be synched because it interfaces with the shooter thread
+			synchronized(this) {
+				handler.update();
 			}
 		}
 	}

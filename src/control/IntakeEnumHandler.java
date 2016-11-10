@@ -3,7 +3,7 @@ package control;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
- * <b>CONTROLL STRUCTURE</b> anything to do with moving the ball can be done with this
+ * <b>CONTROL STRUCTURE</b> anything to do with moving the ball can be done with this
  * @author Connor_Hofenbitzer
  *
  */

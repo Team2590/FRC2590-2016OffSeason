@@ -2,7 +2,7 @@ package org.usfirst.frc.team2590.robot;
 
 public interface RobotMap {
 	//PWM Connections
-    public static int PWM_driveRight = 5;
+    public static int PWM_driveRight = 0;
     public static int PWM_driveLeft = 1;
     
     public static int PWM_intakeArticulate = 2;
@@ -25,4 +25,14 @@ public interface RobotMap {
     public static int Analog_HoodPos = 1;
     public static int Analog_Gyro = 0;
     
+    public final double KP = 0.1; //0.1
+	public final double KI = 0.006; //0.006
+	public final double KD = 0.006;	//0.006
+	
+    public static double kStraightP = 2.0;
+    public static double kStraightI = 0;
+    public static double kStraightD = 0;
+    public static double kStraightV = 0.08;
+    public static double kStraightA = 0.015;
+    public static double kStraightTurn = 0.0016; //.08 //.007 //.0016
 }

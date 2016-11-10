@@ -13,49 +13,52 @@ import edu.wpi.first.wpilibj.Victor;
  */
 public class Shooter extends Thread implements RobotMap {
 	
+	//singleton
 	private static Shooter st = new Shooter();
 	
 	public static Shooter getInstance(){	
 		return st;
 	}
 	
-	private boolean tempForceFire = false;
+	//state machine and variables
 	private boolean auto = true;
 
+	//other classes / sensors
 	private BangBangController bang;
 	private Encoder shooterEncoder;
 	private Victor  shooterMotor;
 	private Jelly j;
 
-	
+	public double getRPM() {
+		return shooterEncoder.getRate();
+	}
 
 	public void run() {
+		
 		while( true ) {
 			//update the shooter
 			bang.update();
-			
-			//force the shot if we get above the threashold
-			if(bang.shotsFired()){
-				tempForceFire = true;
-			} 
-			
+		
 			//if its ready to shoot then shoot
 			if(auto) {
-				//allows interface between two threads
+				//allows interface between two threads (jelly and shooter in this case)
 				synchronized(this) {
-					if(tempForceFire) {
+					if(bang.shotsFired()) {
+						//if the bang bang is up to speed then shoot
 						j.feedToShooter();
 					} else {
+						//else stop
 						j.stopHT();
 					}
 				}
 			}
 			
-			//if its at 0 , stop shooting
-			if(bang.returnRPM() == 0) {
-				tempForceFire = false;
+			//if encoders at 0 , stop shooting
+			if(bang.returnRPM() == 0 || 
+			   bang.giveStp() == 0) {
 				j.stopHT();
 			}
+			
 		}
 		
 	}
@@ -93,7 +96,7 @@ public class Shooter extends Thread implements RobotMap {
 	}
 	
 	/**
-	 * Manually set the speed of the jelly
+	 * Manually set the speed of the jelly needs to be synchronized with the jelly
 	 * @param speed
 	 */
 	public synchronized void setFeederSpeed(int speed) {
@@ -113,4 +116,7 @@ public class Shooter extends Thread implements RobotMap {
 		
 	}
 	
+	public double getSpeed(){
+		return shooterEncoder.getRate();
+	}
 }

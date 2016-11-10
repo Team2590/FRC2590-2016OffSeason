@@ -18,7 +18,7 @@ public class Turn {
 	 * Turn to an angle
 	 * @param angle : angle to turn to
 	 */
-	public void startTurn(double angle){
+	public void startTurn(double angle) {
 		Robot.drivetrain.setState(DriveStates.TURNING);
     	while(!Robot.drivetrain.done())
     		Robot.drivetrain.turnToAngle(angle);

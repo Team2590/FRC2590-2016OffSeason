@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * <b>SUBSYSTEM</b> Drive Train
@@ -19,7 +20,9 @@ import edu.wpi.first.wpilibj.Victor;
 public class DriveTrain extends Thread implements RobotMap , Checkable{
 	
 	//state controller
-	public enum DriveStates { TELEOP , TURNING , TRAJECTORY , LOCKED };
+	public enum DriveStates { 
+		TELEOP , TURNING , TRAJECTORY , DRIVESTRAIGHT , LOCKED 
+	};
 	private DriveStates currentState;
 	
 	//sensors
@@ -28,7 +31,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	public AnalogGyro gyro;
 
 	//drive
-	private RobotDrive driveTrain;
+	public RobotDrive driveTrain;
 	
 	//motors
 	public Victor leftM;
@@ -46,70 +49,63 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	private boolean first = true;
 	
 	//constants
-	private final double KP = 0.1;
-	private final double KI = 0.006;
-	private final double KD = 0.006;	
-	private final double TOLERANCE = 2;
-	
 	private int lastTime = 0;
+	private final double TOLERANCE = 2;	
 
 	
-	public void run() {
-		
+	public void run() {		
 		while( true ) {
-			switch(currentState) {
-			
-			case TELEOP :
+			//SmartDashboard.putNumber("gyro", gyro.getAngle());
+			SmartDashboard.putNumber("lefte", leftE.getDistance());
+			SmartDashboard.putNumber("righte", rightE.getDistance());
+
+			if(currentState == DriveStates.TELEOP ) {
+				//if we are driving in teleop
 				rightM.setInverted(false);
-				leftM.setInverted(false);
 				inputDrive();
-				break;
 				
-			case TURNING : 
+			} else if(currentState == DriveStates.TURNING || 
+					  currentState == DriveStates.TRAJECTORY) {
+				//if doing auto stuff 
 				rightM.setInverted(true);
-				break;
-				
-			case TRAJECTORY :
-				rightM.setInverted(true);
-				break;
-				
-			case LOCKED :
+
+			} 	else if(currentState == DriveStates.DRIVESTRAIGHT) {
+				//pretty much just dont let us drive with joystick
+				rightM.setInverted(false);
+				//let it do whatever it wants
+			}	else {
+				//otherwise
 				stopMotors();
-				break;
 				
-			default :
-				DriverStation.reportError("Unsupported drive state! ", false);
-				
-			}
+			}	
 			
-		}
-		
+		}	
 	}
+		
 	
-	public DriveTrain( Joystick x , Joystick y) {
+	
+	public DriveTrain( Joystick x , Joystick y , Encoder leftE , Encoder rightE) {
 		
 		//joysticks
 		this.x = x;
 		this.y = y;
 				
-		//sensors and motors
+		//motors
+		this.leftE = leftE;
+		this.rightE = rightE;
 		leftM = new Victor(PWM_driveLeft);
 		rightM = new Victor(PWM_driveRight);
+		
 		
 		//driveTrain
 		driveTrain = new RobotDrive(leftM, rightM);
 		
-		//encoders
-		leftE = new Encoder(2,3);
-        rightE = new Encoder(1,0);
+		//encoders && other sensors
 		gyro = new AnalogGyro(0);
 		
-		
-        leftE.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
-        rightE.setDistancePerPulse(1.0/360.0 * ((6.0 * Math.PI) / 12.0));
         
 		//PID Controllers T = turn
-		turnP = new PID(KP,KI,KD,false);
+		turnP = new PID(KP , KI , KD , true , 0.4);
 		
 		//start the thread
 		this.start();
@@ -128,13 +124,18 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	 * @param auto : locks the controls if true
 	 */
 	public void setState( DriveStates drive ) {
-		
+		//set the drive state
 		currentState = drive;
 		
-		resetAllSensors();
-		first = true;
-		done = false;
-		lastTime = (int) Timer.getFPGATimestamp();
+		//get ready for the trajectory and turning stuff
+
+	
+		if(drive == DriveStates.TURNING || drive == DriveStates.DRIVESTRAIGHT) {
+			resetAllSensors();
+			first = true;
+			done = false;
+			lastTime = (int) Timer.getFPGATimestamp();
+		}
 		
 	}
 	
@@ -154,11 +155,16 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	 */
 	public synchronized void turnToAngle( double angle ) {
 		
+		//print to know were turning 
+		System.out.println("turn being called");
+		
+		//if its the first ca;; set the angle
 		if( first ) {
 			turnP.set(angle);
 			first = false;
 		}
 		
+		//if were not done were still turning , obvi 
 		if( !done ) {
 				
 			//set the outputs to the motors
@@ -166,14 +172,13 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 			rightM.set(-turnP.getOutput(gyro.getAngle()));
 		
 			//end condition
-			if( Math.abs( turnP.getSetpoint() - gyro.getAngle() ) < TOLERANCE 
-					 || Math.abs( lastTime - Timer.getFPGATimestamp() ) > 3 ) { 
+			if( Math.abs( turnP.getSetpoint() - gyro.getAngle() ) < TOLERANCE || 
+					Math.abs( lastTime - Timer.getFPGATimestamp() ) > 3 ) { 
 				
-				first = true;
-				done = true;
-				currentState = DriveStates.LOCKED;
-				System.out.println("done dt set to locked");
-				
+						//if were done then lock everything
+						done = true;
+						currentState = DriveStates.LOCKED;
+						System.out.println("done dt set to locked");	
 			}
 		}
 	
@@ -183,6 +188,8 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	 * Reset every drivetrain sensor
 	 */ 
 	public synchronized void resetAllSensors() {
+		
+		//don't be an idiot ,  you know what this does
 		gyro.reset();
 		leftE.reset();
 		rightE.reset();
@@ -190,6 +197,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 
 	@Override
 	public boolean done() {
+		
 		return done;
 	}
 	
@@ -197,6 +205,7 @@ public class DriveTrain extends Thread implements RobotMap , Checkable{
 	 * Stops all motors
 	 */
 	public void stopMotors() {
+		
 		driveTrain.arcadeDrive(0,0);
 	}
 }
