@@ -4,7 +4,7 @@ import autoActions.DriveStraight;
 import autoActions.FixIntake;
 import autoActions.Turn;
 
-public class chivalDeAuto extends AutoModeTemplate {
+public class ChivalDeAuto extends AutoModeTemplate {
 	DriveStraight driveToChival;
 	DriveStraight driveOverChival , driveToTower;
 	FixIntake fix;
